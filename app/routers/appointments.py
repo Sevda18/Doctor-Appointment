@@ -1,5 +1,3 @@
-# app/routers/appointments.py
-
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
@@ -9,7 +7,7 @@ from app.models.user import User
 from app.models.appointment_slot import AppointmentSlot
 from app.models.appointment import Appointment
 from app.schemas.appointments import AppointmentCreate, AppointmentOut
-from app.services.notifications import notify_doctor_and_patient, notify
+from app.services.notifications import notify_doctor_and_patient
 
 router = APIRouter(prefix="/appointments", tags=["appointments"])
 
@@ -23,6 +21,7 @@ def create_appointment(
     slot = db.query(AppointmentSlot).filter(AppointmentSlot.id == data.slot_id).first()
     if not slot:
         raise HTTPException(status_code=404, detail="Slot not found")
+
     if slot.is_available != 1:
         raise HTTPException(status_code=409, detail="Slot is not available")
 
@@ -47,10 +46,7 @@ def create_appointment(
 
 
 @router.get("/mine", response_model=list[AppointmentOut], dependencies=[Depends(require_role("USER"))])
-def my_appointments(
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-):
+def my_appointments(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     return (
         db.query(Appointment)
         .filter(Appointment.patient_user_id == user.id)
@@ -60,10 +56,7 @@ def my_appointments(
 
 
 @router.get("/history", response_model=list[AppointmentOut], dependencies=[Depends(require_role("USER"))])
-def history(
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-):
+def history(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     return (
         db.query(Appointment)
         .filter(
@@ -76,11 +69,7 @@ def history(
 
 
 @router.get("/{appointment_id}", response_model=AppointmentOut, dependencies=[Depends(require_role("USER"))])
-def get_my_appointment(
-    appointment_id: int,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-):
+def get_my_appointment(appointment_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     appt = db.query(Appointment).filter(Appointment.id == appointment_id).first()
     if not appt:
         raise HTTPException(status_code=404, detail="Appointment not found")
@@ -90,11 +79,7 @@ def get_my_appointment(
 
 
 @router.post("/{appointment_id}/cancel", response_model=AppointmentOut, dependencies=[Depends(require_role("USER"))])
-def cancel_appointment(
-    appointment_id: int,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-):
+def cancel_appointment(appointment_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     appt = db.query(Appointment).filter(Appointment.id == appointment_id).first()
     if not appt:
         raise HTTPException(status_code=404, detail="Appointment not found")

@@ -59,3 +59,15 @@ def create_review(
 
     db.refresh(rev)
     return rev
+
+@router.get("/mine", response_model=list[ReviewOut], dependencies=[Depends(require_role("USER"))])
+def my_reviews(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    return (
+        db.query(Review)
+        .filter(Review.user_id == user.id)
+        .order_by(Review.id.desc())
+        .all()
+    )

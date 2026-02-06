@@ -7,9 +7,9 @@ class DoctorOut(BaseModel):
     id: int
     full_name: str
     bio: str
-    clinic_name: Optional[str] = None
+    clinic_name: str
     address: Optional[str] = None
-    phone: Optional[str] = None
+    phone: str
     specialty_id: int
     specialty: SpecialtyOut
     avg_rating: float = 0.0
@@ -23,7 +23,7 @@ class DoctorOut(BaseModel):
 class DoctorCreate(BaseModel):
     full_name: str
     bio: str = ""
-    clinic_name: Optional[str] = None
-    address: Optional[str] = None
-    phone: Optional[str] = None
+    clinic_name: str
+    address: str
+    phone: str
     specialty_id: int
