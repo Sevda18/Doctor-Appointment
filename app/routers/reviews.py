@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import IntegrityError
 
 from app.db import get_db
@@ -11,7 +11,8 @@ from app.schemas.reviews import ReviewCreate, ReviewOut
 
 router = APIRouter(prefix="/doctors", tags=["reviews"])
 
-@router.get("/{doctor_id}/reviews", response_model=list[ReviewOut])
+
+@router.get("/{doctor_id:int}/reviews", response_model=list[ReviewOut])
 def list_reviews(doctor_id: int, db: Session = Depends(get_db)):
     doc = db.query(DoctorProfile).filter(DoctorProfile.id == doctor_id).first()
     if not doc:
@@ -24,7 +25,8 @@ def list_reviews(doctor_id: int, db: Session = Depends(get_db)):
         .all()
     )
 
-@router.post("/{doctor_id}/reviews", response_model=ReviewOut, dependencies=[Depends(require_role("USER"))])
+
+@router.post("/{doctor_id:int}/reviews", response_model=ReviewOut, dependencies=[Depends(require_role("USER"))])
 def create_review(
     doctor_id: int,
     data: ReviewCreate,
@@ -60,6 +62,7 @@ def create_review(
     db.refresh(rev)
     return rev
 
+
 @router.get("/mine", response_model=list[ReviewOut], dependencies=[Depends(require_role("USER"))])
 def my_reviews(
     db: Session = Depends(get_db),
@@ -68,6 +71,6 @@ def my_reviews(
     return (
         db.query(Review)
         .filter(Review.user_id == user.id)
-        .order_by(Review.id.desc())
+        .order_by(Review.created_at.desc())
         .all()
     )
