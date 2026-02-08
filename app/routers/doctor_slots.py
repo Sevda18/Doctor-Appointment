@@ -86,7 +86,7 @@ def delete_slot(
         raise HTTPException(status_code=403, detail="Forbidden")
 
     has_appt = db.query(Appointment).filter(Appointment.slot_id == slot_id).first()
-    if has_active:
+    if has_appt:
         raise HTTPException(status_code=409, detail="Slot has active appointment and cannot be deleted")
     db.delete(slot)
     db.commit()

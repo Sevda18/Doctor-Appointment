@@ -12,6 +12,20 @@ from app.schemas.reviews import ReviewCreate, ReviewOut
 router = APIRouter(prefix="/doctors", tags=["reviews"])
 
 
+# Place the /mine route BEFORE dynamic routes to avoid path conflicts
+@router.get("/mine", response_model=list[ReviewOut], dependencies=[Depends(require_role("USER"))])
+def my_reviews(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    return (
+        db.query(Review)
+        .filter(Review.user_id == user.id)
+        .order_by(Review.created_at.desc())
+        .all()
+    )
+
+
 @router.get("/{doctor_id:int}/reviews", response_model=list[ReviewOut])
 def list_reviews(doctor_id: int, db: Session = Depends(get_db)):
     doc = db.query(DoctorProfile).filter(DoctorProfile.id == doctor_id).first()
@@ -61,16 +75,3 @@ def create_review(
 
     db.refresh(rev)
     return rev
-
-
-@router.get("/mine", response_model=list[ReviewOut], dependencies=[Depends(require_role("USER"))])
-def my_reviews(
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-):
-    return (
-        db.query(Review)
-        .filter(Review.user_id == user.id)
-        .order_by(Review.created_at.desc())
-        .all()
-    )

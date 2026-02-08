@@ -25,6 +25,8 @@ app.include_router(admin_router)
 
 # doctors
 app.include_router(doctor_me_router)
+# reviews_router must come BEFORE doctors_router to prevent /doctors/mine being matched by /doctors/{doctor_id}
+app.include_router(reviews_router)
 app.include_router(doctors_router)
 
 # specialties
@@ -38,9 +40,7 @@ app.include_router(public_slots_router)
 app.include_router(appointments_router)
 app.include_router(doctor_appointments_router)
 
-# reviews
-app.include_router(reviews_router)
-
+# notifications
 app.include_router(notifications_router)
 
 app.include_router(favorites.router)
